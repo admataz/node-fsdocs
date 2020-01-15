@@ -1,0 +1,23 @@
+{
+  "name": "fsdocs",
+  "version": "1.0.0",
+  "description": "manager for saving provided doc to a filesystem",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/**/*.test.js"
+  },
+  "author": "Adam Davis <adam@admataz.com>",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^8.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "tap": "^14.10.6"
+  }
+}
