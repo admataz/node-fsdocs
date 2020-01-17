@@ -6,8 +6,12 @@ const path = require('path')
 const supportedTypes = ['.md', '.json', '.txt', '.csv']
 
 class FSDocsManager {
-  constructor (docsPath = '') {
-    this.docsPath = docsPath
+  constructor (dir) {
+    if (!path.isAbsolute(dir)) {
+      throw new Error('ERR_FILEPATH_NOT_ABSOLUTE')
+    }
+    this.basePath = dir
+    fs.mkdirSync(dir)
   }
 
   async createFile (...args) {
@@ -59,23 +63,25 @@ class FSDocsManager {
     return `${savePath}_${fileNameIncr}${ext}`
   }
 
-  async saveFile (dir, name, ext, content = '', replace = false) {
-    if (!path.isAbsolute(dir)) {
-      throw new Error('ERR_FILEPATH_NOT_ABSOLUTE')
-    }
-    if (!supportedTypes.includes(ext)) {
-      throw new Error('ERR_FILETYPE_NOT_SUPPORTED')
-    }
-
+  sanitize (content, ext) {
     let sanitized = content.toString()
-
     if (ext === '.json') {
       if (typeof content === 'object') {
         sanitized = JSON.stringify(content)
       }
     }
+    return sanitized
+  }
 
-    const savePath = await this.makeFileName(dir, name, ext, replace)
+  async saveFile (dir, name, ext, content = '', replace = false) {
+    const saveDir = path.isAbsolute(dir) ? dir : path.resolve(this.basePath, dir)
+    if (!supportedTypes.includes(ext)) {
+      throw new Error('ERR_FILETYPE_NOT_SUPPORTED')
+    }
+
+    const sanitized = this.sanitize(content, ext)
+
+    const savePath = await this.makeFileName(saveDir, name, ext, replace)
 
     await fs.outputFile(savePath, sanitized)
     return savePath
