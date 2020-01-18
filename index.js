@@ -19,12 +19,12 @@ class FSDocsManager {
       throw new Error('ERR_FILEPATH_NOT_ABSOLUTE')
     }
     this.basePath = dir
-    fs.mkdirSync(dir)
+    fs.mkdirpSync(dir)
   }
 
   /**
    * @param  {...any} args - wrapper for `saveFile`
-   * @param {string} dir - relative path to basePath or an absolute path to save destination
+   * @param {string} dir - relative path to basePath to save destination
    * @param {string} name - name of the file
    * @param {string} ext - filetype extension .txt, .json, .md, .csv
    * @param {string | object} content - content of the file - object if JSON
@@ -37,13 +37,14 @@ class FSDocsManager {
 
   /**
    * update a file
-   * @param {string} filePath absolute or relative path to the file needing updating
+   * @param {string} filePath relative path to the file needing updating
    * @param {string|object} content new content for the file
    * @returns {Promise} - path to updated file
    */
   async updateFile (filePath, content) {
-    await this.checkExists(filePath)
-    const { dir, name, ext } = path.parse(filePath)
+    const updatePath = path.resolve(this.basePath, filePath)
+    await this.checkExists(updatePath)
+    const { dir, name, ext } = path.parse(updatePath)
     return this.saveFile(dir, name, ext, content, true)
   }
 
@@ -53,7 +54,7 @@ class FSDocsManager {
    * @returns {Promise} - string contents of file
    */
   async readFile (filePath) {
-    const readPath = path.isAbsolute(filePath) ? filePath : path.resolve(this.basePath, filePath)
+    const readPath = path.resolve(this.basePath, filePath)
     await this.checkExists(readPath)
     return fs.readFile(readPath, { encoding: 'utf8' })
   }
@@ -64,7 +65,7 @@ class FSDocsManager {
    * @returns {Promise} - string with path of deleted file
    */
   async deleteFile (filePath) {
-    const deletePath = path.isAbsolute(filePath) ? filePath : path.resolve(this.basePath, filePath)
+    const deletePath = path.resolve(this.basePath, filePath)
     await this.checkExists(deletePath)
     await fs.remove(deletePath)
     return deletePath
@@ -88,7 +89,7 @@ class FSDocsManager {
    * @returns {Promise} - array of string filenames
    */
   async listFiles (dirPath) {
-    const listPath = path.isAbsolute(dirPath) ? dirPath : path.resolve(this.basePath, dirPath)
+    const listPath = path.resolve(this.basePath, dirPath)
     await this.checkExists(listPath)
     const files = await fs.readdir(listPath)
     return files
@@ -135,7 +136,7 @@ class FSDocsManager {
 
   /**
    * Save the file to disk
-   * @param {string} dir - relative path to basePath or an absolute path to save destination
+   * @param {string} dir - relative path to basePath to save destination
    * @param {string} name - name of the file
    * @param {string} ext - filetype extension .txt, .json, .md, .csv
    * @param {string | object} content - content of the file - object if JSON
@@ -143,7 +144,7 @@ class FSDocsManager {
    * @returns {Promise} - string path to saved file
    */
   async saveFile (dir, name, ext, content = '', replace = false) {
-    const saveDir = path.isAbsolute(dir) ? dir : path.resolve(this.basePath, dir)
+    const saveDir = path.resolve(this.basePath, dir)
     if (!supportedTypes.includes(ext)) {
       throw new Error('ERR_FILETYPE_NOT_SUPPORTED')
     }
