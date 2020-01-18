@@ -50,25 +50,26 @@ t.test('FSDocs', (t) => {
 
   t.test('file operations', (t) => {
     const docsManager = new FSDocs(dest)
+    const relativeDirPath = './'
 
     t.test('file creation', async (t) => {
-      const createdFile = await docsManager.createFile(dest, 'my-test', '.txt', 'Test plain text')
-      t.equal(createdFile, `${dest}/my-test.txt`)
-      const sampleContent = await fs.readFile(createdFile, 'utf8')
+      const createdFile = await docsManager.createFile(relativeDirPath, 'my-test', '.txt', 'Test plain text')
+      t.equal(createdFile, 'my-test.txt')
+      const sampleContent = await fs.readFile(path.resolve(dest, createdFile), 'utf8')
       t.equal(sampleContent, 'Test plain text')
 
-      await docsManager.createFile(dest, 'my-test', '.json', { test: ['json', 'is', 'ok'], what: null, something: false })
-      await docsManager.createFile(dest, 'my-test', '.md', '# Test Markdown')
-      await docsManager.createFile(dest, 'my-test', '.csv', '1,2,3,4,5,6,7')
+      await docsManager.createFile(relativeDirPath, 'my-test', '.json', { test: ['json', 'is', 'ok'], what: null, something: false })
+      await docsManager.createFile(relativeDirPath, 'my-test', '.md', '# Test Markdown')
+      await docsManager.createFile(relativeDirPath, 'my-test', '.csv', '1,2,3,4,5,6,7')
 
       // will create a file with incremented filename
-      await docsManager.createFile(dest, 'my-test', '.json', { test: ['json2', 'is2', 'ok2'], what: null, something: false })
-      await docsManager.createFile(dest, 'my-test', '.json', { test: ['json3', 'is3', 'ok3'], what: null, something: false })
+      await docsManager.createFile(relativeDirPath, 'my-test', '.json', { test: ['json2', 'is2', 'ok2'], what: null, something: false })
+      await docsManager.createFile(relativeDirPath, 'my-test', '.json', { test: ['json3', 'is3', 'ok3'], what: null, something: false })
 
       const fileList = await fs.readdir(dest)
       t.same(fileList.sort(), ['my-test.json', 'my-test.md', 'my-test.txt', 'my-test.csv', 'my-test_1.json', 'my-test_2.json'].sort())
 
-      const fileList2 = await docsManager.listFiles(dest)
+      const fileList2 = await docsManager.listFiles(relativeDirPath)
       t.same(fileList2.sort(), fileList2.sort())
     })
 
@@ -76,7 +77,7 @@ t.test('FSDocs', (t) => {
       const created = await docsManager.createFile('test-dir', 'my-test', '.txt', 'Test plain text')
       await docsManager.updateFile(created, 'Updated Content')
 
-      const readContent = await fs.readFile(created, 'utf8')
+      const readContent = await fs.readFile(path.resolve(dest, created), 'utf8')
       t.equal(readContent, 'Updated Content')
 
       const readContent2 = await docsManager.readFile(created)
@@ -87,21 +88,15 @@ t.test('FSDocs', (t) => {
       t.same(fileList, [])
     })
 
-    t.test('file create read delete absolute path', async (t) => {
+    t.test('reject file create read delete absolute path', async (t) => {
       const absPath = path.resolve(dest, 'test-dir')
+      const absFile = path.resolve(absPath, 'test.txt')
 
-      const created = await docsManager.createFile(absPath, 'my-test', '.txt', 'Test plain text')
-      await docsManager.updateFile(created, 'Updated Content')
-
-      const readContent = await fs.readFile(created, 'utf8')
-      t.equal(readContent, 'Updated Content')
-
-      const readContent2 = await docsManager.readFile(created)
-      t.equal(readContent, readContent2)
-
-      await docsManager.deleteFile(created)
-      const fileList = await fs.readdir(absPath)
-      t.same(fileList, [])
+      t.rejects(async () => docsManager.createFile(absPath, 'my-test', '.txt', 'Test plain text'), {}, 'ERR_ABSOLUTE_FILEPATH_NOT_ALLOWED')
+      t.rejects(async () => docsManager.createFile(absFile, 'Test plain text updated'), {}, 'ERR_ABSOLUTE_FILEPATH_NOT_ALLOWED')
+      t.rejects(async () => docsManager.readFile(absFile), {}, 'ERR_ABSOLUTE_FILEPATH_NOT_ALLOWED')
+      t.rejects(async () => docsManager.deleteFile(absFile), {}, 'ERR_ABSOLUTE_FILEPATH_NOT_ALLOWED')
+      t.rejects(async () => docsManager.listFiles(absPath), {}, 'ERR_ABSOLUTE_FILEPATH_NOT_ALLOWED')
     })
 
     t.test('invalid', async (t) => {

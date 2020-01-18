@@ -32,6 +32,7 @@ class FSDocsManager {
    * @returns {Promise} - path to saved file
    */
   async createFile (...args) {
+    this.checkIsNotAbsolute(args[0])
     return this.saveFile(...args)
   }
 
@@ -42,6 +43,7 @@ class FSDocsManager {
    * @returns {Promise} - path to updated file
    */
   async updateFile (filePath, content) {
+    this.checkIsNotAbsolute(filePath)
     const updatePath = path.resolve(this.basePath, filePath)
     await this.checkExists(updatePath)
     const { dir, name, ext } = path.parse(updatePath)
@@ -54,6 +56,7 @@ class FSDocsManager {
    * @returns {Promise} - string contents of file
    */
   async readFile (filePath) {
+    this.checkIsNotAbsolute(filePath)
     const readPath = path.resolve(this.basePath, filePath)
     await this.checkExists(readPath)
     return fs.readFile(readPath, { encoding: 'utf8' })
@@ -65,6 +68,7 @@ class FSDocsManager {
    * @returns {Promise} - string with path of deleted file
    */
   async deleteFile (filePath) {
+    this.checkIsNotAbsolute(filePath)
     const deletePath = path.resolve(this.basePath, filePath)
     await this.checkExists(deletePath)
     await fs.remove(deletePath)
@@ -80,6 +84,12 @@ class FSDocsManager {
     const exists = await fs.pathExists(filePath)
     if (!exists) {
       throw new Error('ERR_FILE_NOT_EXISTS')
+    }
+  }
+
+  checkIsNotAbsolute (filePath) {
+    if (path.isAbsolute(filePath)) {
+      throw new Error('ERR_ABSOLUTE_FILEPATH_NOT_ALLOWED')
     }
   }
 
@@ -154,7 +164,7 @@ class FSDocsManager {
     const savePath = await this.makeFileName(saveDir, name, ext, replace)
 
     await fs.outputFile(savePath, sanitized)
-    return savePath
+    return path.relative(this.basePath, savePath)
   }
 }
 
