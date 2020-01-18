@@ -113,13 +113,3 @@ t.test('FSDocs', (t) => {
   })
   t.end()
 })
-// const deleted = await docsManager.deleteFile(createdFile)
-
-// // invalid input gets sanitized
-// docsManager.createFile(dest, 'my-test', 'txt', function(){console.log('errr')}).catch(err => console.log(err))
-// docsManager.createFile(dest, 'my-test', 'txt', {what: 'object'}).catch(err => console.log(err))
-
-// // invalid parameters get caught
-// docsManager.createFile(dest, 'my-test', 'js', 'console.log("bad script")').catch(err => console.log(err))
-// docsManager.createFile('localpath', 'my-test', 'js', 'Test plain text').catch(err => console.log(err))
-// })

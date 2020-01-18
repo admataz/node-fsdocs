@@ -4,7 +4,8 @@
   "description": "manager for saving provided doc to a filesystem",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/**/*.test.js"
+    "test": "tap test/**/*.test.js",
+    "docs": "jsdoc ./index.js -d ./docs"
   },
   "author": "Adam Davis <adam@admataz.com>",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "jsdoc": "^3.6.3",
     "tap": "^14.10.6"
   }
 }
