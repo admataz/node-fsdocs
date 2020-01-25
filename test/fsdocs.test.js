@@ -6,10 +6,9 @@ const fs = require('fs-extra')
 const FSDocs = require('../')
 const dest = path.resolve(__dirname, 'test-files')
 
-t.test('FSDocs', (t) => {
-  t.beforeEach(async () => {
+t.test('FSDocs', async (t) => {
+  t.afterEach(async () => {
     await fs.emptyDir(dest)
-    await fs.remove(dest)
   })
 
   t.test('constructor', async (t) => {
@@ -88,6 +87,18 @@ t.test('FSDocs', (t) => {
       t.same(fileList, [])
     })
 
+    t.test('delete directories', async (t) => {
+      t.test('do not allow deleting of non-empty dirs', async (t) => {
+        await fs.ensureFile(path.resolve(dest, 'to-be-deleted/test.txt'))
+        t.rejects(async () => docsManager.deleteFile('to-be-deleted'), {}, 'ERR_DELETE_DIR_WITH_CONTENTS')
+      })
+      t.test('allow deleting of empty dir', async (t) => {
+        await fs.ensureDir(path.resolve(dest, 'to-be-deleted'))
+        await docsManager.deleteFile('to-be-deleted')
+        t.false(await fs.pathExists(path.resolve(dest, 'to-be-deleted')))
+      })
+    })
+
     t.test('reject file create read delete absolute path', async (t) => {
       const absPath = path.resolve(dest, 'test-dir')
       const absFile = path.resolve(absPath, 'test.txt')
@@ -106,5 +117,5 @@ t.test('FSDocs', (t) => {
 
     t.end()
   })
-  t.end()
+  await fs.remove(dest)
 })

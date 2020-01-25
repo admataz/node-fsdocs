@@ -59,6 +59,10 @@ class FSDocsManager {
     this.checkIsNotAbsolute(filePath)
     const readPath = path.resolve(this.basePath, filePath)
     await this.checkExists(readPath)
+    const stat = await fs.stat(readPath)
+    if (stat.isDirectory()) {
+      return this.listFiles(filePath)
+    }
     return fs.readFile(readPath, { encoding: 'utf8' })
   }
 
@@ -71,6 +75,14 @@ class FSDocsManager {
     this.checkIsNotAbsolute(filePath)
     const deletePath = path.resolve(this.basePath, filePath)
     await this.checkExists(deletePath)
+    const stat = await fs.stat(deletePath)
+
+    if (stat.isDirectory()) {
+      const fileList = await fs.readdir(deletePath)
+      if (fileList.length) {
+        throw new Error('ERR_DELETE_DIR_WITH_CONTENTS')
+      }
+    }
     await fs.remove(deletePath)
     return deletePath
   }
@@ -99,6 +111,8 @@ class FSDocsManager {
    * @returns {Promise} - array of string filenames
    */
   async listFiles (dirPath) {
+    this.checkIsNotAbsolute(dirPath)
+
     const listPath = path.resolve(this.basePath, dirPath)
     await this.checkExists(listPath)
     const files = await fs.readdir(listPath)
